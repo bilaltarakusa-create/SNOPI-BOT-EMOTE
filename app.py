@@ -773,18 +773,22 @@ def api_send_emote(uids, emote_id):
         print(f"Error getting result from future: {e}")
         return jsonify({"error": f"An internal error occurred: {e}"}), 500
 
+# [الكود المعدل في النهاية]
+
 # =============================================================================
-#  تعديل طريقة تشغيل السكريبت
+#  تعديل طريقة تشغيل السكريبت (متوافق مع Vercel)
 # =============================================================================
 
+# 1. بدء تشغيل البوت في background thread
+# هذا الكود سيعمل عندما يقوم Vercel باستيراد الملف لبدء تشغيل السيرفر
+print("--- بدء تشغيل الـ thread الخاص بالبوت (وضع Vercel)... ---")
+bot_thread = Thread(target=run_async_bot, daemon=True)
+bot_thread.start()
+
+# 2. الكود التالي سيعمل فقط عند التشغيل المحلي (local)
+# Vercel لن يقوم بتشغيل هذا الجزء، بل سيستخدم السيرفر الخاص به
 if __name__ == '__main__':
-    # 1. بدء تشغيل البوت في background thread
-    # daemon=True تعني أن الـ thread سيموت عند إغلاق البرنامج الرئيسي
-    print("--- بدء تشغيل الـ thread الخاص بالبوت... ---")
-    bot_thread = Thread(target=run_async_bot, daemon=True)
-    bot_thread.start()
-    
-    # 2. بدء تشغيل خادم Flask (WSGI) في الـ main thread
-    print("--- بدء تشغيل خادم Flask على http://127.0.0.1:8000 ---")
-    # (ملاحظة: لا تستخدم app.run() في بيئة الإنتاج)
+    # بدء تشغيل خادم Flask (WSGI) في الـ main thread
+    print("--- بدء تشغيل خادم Flask على http://127.0.0.1:8000 (وضع محلي)... ---")
     app.run(host="127.0.0.1", port=8000, debug=False)
+
